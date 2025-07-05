@@ -1,0 +1,9 @@
+mlflow:
+  tracking_uri: http://localhost:5000
+  experiment_name: churn-prediction
+
+paths:
+  X: data/X.csv
+  y: data/y.csv
+  model: data/model.pkl
+  confusion_matrix: data/conf_matrix.png

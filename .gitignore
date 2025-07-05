@@ -1,0 +1,23 @@
+# Ignore Python bytecode and cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Ignore Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore Airflow and MLflow artifacts
+mlruns/
+airflow_home/
+airflow_logs/
+logs/
+
+# Virtual environments
+venv/
+.env/
+
+# OS/filesystem clutter
+.DS_Store
+*.swp
+*.swo

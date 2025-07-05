@@ -1,106 +1,155 @@
-# Telco Customer Churn Prediction
+# Churn Prediction ML Pipeline
 
-This project predicts customer churn using machine learning techniques based on historical telecom usage data. It was built as a practice exercise in classification modeling, with an emphasis on maximizing recall for identifying at-risk customers.
+A production-grade machine learning pipeline for customer churn prediction using:
 
----
-
-## 🔍 Project Overview
-
-Customer churn (when users stop using a service) is a major challenge for telecom companies. Identifying potential churners early allows for proactive retention efforts.
-
-This project:
-- Cleans and prepares raw customer data
-- Builds and trains a Random Forest model
-- Tunes the threshold to prioritize **recall** (catching churners)
-- Evaluates performance with classification metrics and visualizations
+- **Airflow** for orchestration
+- **MLflow** for experiment tracking
+- **Scikit-learn** for modeling
+- **Jupyter Notebooks** for analysis
+- **WSL + Python virtualenv** for environment isolation
 
 ---
 
-## 📁 Data
+## 📦 Features
 
-The dataset comes from [Telco Customer Churn dataset on Kaggle](https://www.kaggle.com/datasets/blastchar/telco-customer-churn/) and includes customer demographics, account information, and service usage.
-
-Key features include:
-- `tenure`, `MonthlyCharges`, `TotalCharges`
-- Service types (`PhoneService`, `InternetService`, etc.)
-- Contract type, payment method, and more
-
-The target variable is `Churn` (Yes/No).
+- Cleanly structured pipeline: `load → preprocess → train → evaluate`
+- Tracked and reproducible ML runs via MLflow
+- Modular and maintainable Python package layout
+- Configurable through a centralized `config.yaml`
+- Ready for local or cloud deployment
 
 ---
 
-## 🧪 Modeling Pipeline
+## 🚀 Quickstart
 
-1. **Load & Inspect**: Understand raw structure
-2. **Clean & Prepare**: Handle nulls, encode categoricals, scale numerical features
-3. **Feature Engineer**: Normalize numeric features
-4. **Train-test Split**: random_state=42 (the ultimate answer, right?)
-5. **Train a Random Forest model**: 100 trees
-6. **Evaluate**: Precision, recall, F1-score, confusion matrix.
-7. **Save the Trained Model**
+### 1. Clone the Repository
 
+```bash
+git clone https://github.com/YOUR_USERNAME/gusto-ml-churn-pipeline.git
+cd gusto-ml-churn-pipeline
+```
 
+### 2. Create Virtual Environment
 
----
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-## ✅ Results
+### 3. Install Dependencies
 
-- **Recall (churn class)**: **75%**  
-- **Precision (churn class)**: 51%  
-- **Accuracy**: 74%
+```bash
+pip install -r requirements.txt
+```
 
-🎯 The model effectively catches 3 out of 4 churners with a reasonable precision tradeoff — ideal for customer retention campaigns.
+### 4. Launch Airflow and MLflow
 
----
+```bash
+chmod +x start.sh
+./start.sh
+```
 
-## 📂 Project Structure
-
-telco-churn-predictor/
-├── data/
-│ └── WA_Fn-UseC_-Telco-Customer-Churn.csv
-│ └── X_test.csv
-│ └── X_train.csv
-│ └── Y_test.csv
-│ └── Y_train.csv
-├── models/
-│ └── random_forest_churn.pkl
-├── notebooks/
-│ ├── telco_churn_predictor.ipynb
-├── README.md
-└── requirements.txt
-
+> This starts:
+> - Airflow scheduler at `http://localhost:8080`
+> - MLflow UI at `http://localhost:5000`
 
 ---
 
-## 🛠 How to Run
+## 🧠 Pipeline Tasks
 
-1. Clone the repo
-2. Install dependencies:  
-   `pip install -r requirements.txt`
-3. Run notebooks in order (Jupyter or VSCode)
+| Task          | Description                                   |
+|---------------|-----------------------------------------------|
+| `load_data.py`   | Load and persist raw input data as CSV       |
+| `preprocess.py`  | Clean and encode features                    |
+| `train_model.py` | Train RandomForest model + log to MLflow     |
+| `evaluate.py`    | Evaluate test data + log metrics + plot      |
 
----
-
-📄 View notebook outputs:
-- [Model Training & Tuning (HTML)](notebooks/html_exports/telco_churn_predictor.html)
-
----
-
-## 🚀 Future Work
-
-- Hyperparameter tuning
-- SMOTE / resampling to boost minority class further
-- Model explainability via SHAP or feature permutation
-- Deployment via Flask or Streamlit
-- Host on a Cloud
+Each task is independently runnable and integrated into an Airflow DAG (`churn_pipeline`).
 
 ---
 
-## 📌 Author
+## 📁 Folder Structure
 
-Guillermo Kuhl
+```
+ml_pipeline_demo/
+├── airflow/                  # DAGs and Airflow config
+│   └── churn_dag.py
+├── data/                     # Input/output data
+│   ├── X.csv
+│   ├── y.csv
+│   ├── model.pkl
+│   └── conf_matrix.png
+├── src/
+│   ├── config.yaml           # Central config for paths + MLflow
+│   ├── utils.py              # Config + path helpers
+│   ├── data_ingest/
+│   │   └── load_data.py
+│   ├── features/
+│   │   └── preprocess.py
+│   └── models/
+│       ├── train_model.py
+│       └── evaluate.py
+├── requirements.txt
+├── start.sh
+└── README.md
+```
 
-All Rights Reserved.
+---
 
-This project was completed as part of a self-directed ML portfolio. Built using Python, scikit-learn, pandas, matplotlib, seaborn, and Jupyter.
+## 📊 MLflow Tracking
 
+MLflow logs:
+
+- Parameters: `n_estimators`, `max_depth`, etc.
+- Metrics: `accuracy`, `precision`, `recall`, `f1`
+- Artifacts: model pickle, confusion matrix image
+
+Track at: [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 🧬 Configuration (`config.yaml`)
+
+```yaml
+mlflow:
+  tracking_uri: http://localhost:5000
+  experiment_name: churn-prediction
+
+paths:
+  X: data/X.csv
+  y: data/y.csv
+  model: data/model.pkl
+  confusion_matrix: data/conf_matrix.png
+```
+
+Update paths and experiment names here for easy portability.
+
+---
+
+## 🛠️ Airflow Usage
+
+From the UI at `http://localhost:8080`:
+
+1. Turn on `churn_pipeline`
+2. Trigger DAG manually
+3. Monitor task logs and results
+
+Or use CLI:
+
+```bash
+airflow dags trigger churn_pipeline
+```
+
+---
+
+## ✅ Next Steps
+
+- Track data versions and schema drift
+- Deploy Model as API using Flask or FastAPI
+- Containerize with Docker
+
+---
+
+## 🧾 License
+
+MIT License

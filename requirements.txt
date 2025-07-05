@@ -1,7 +1,18 @@
-pandas
-numpy
-scikit-learn
-matplotlib
-seaborn
-jupyter
-joblib
+# Core ML + Data Science
+pandas==2.1.4
+numpy==1.24.4
+scikit-learn==1.4.2
+matplotlib==3.8.4
+seaborn==0.12.2
+joblib==1.4.2
+jupyter==1.0.0
+
+# MLflow for experiment tracking
+mlflow==2.11.3
+
+# Airflow (core + tested dependency versions)
+apache-airflow==2.8.1
+
+
+# Airflow runtime dependencies (DO NOT UPGRADE)
+pendulum==2.1.2
