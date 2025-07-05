@@ -21,3 +21,7 @@ venv/
 .DS_Store
 *.swp
 *.swo
+
+# Model output
+data/model.pkl
+data/conf_matrix.png

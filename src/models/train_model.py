@@ -1,45 +1,60 @@
+import yaml
+import joblib
+import os
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-import joblib
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from src.features.preprocessing import get_preprocessor
 
-from src.utils import load_config, resolve_path
+def resolve_path(relative_path):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", relative_path))
 
-def train(n_estimators=100, max_depth=None):
-    """
-    Train a Random Forest model on churn dataset,
-    save model locally, and log to MLflow.
-    """
+def load_config():
+    config_path = resolve_path("src/config.yaml")
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    return config
+
+def train():
+    # Load the configuration
     config = load_config()
-    paths = config["paths"]
+    X_transformed = resolve_path(config["data"]["X"])
+    y= resolve_path(config["data"]["y"])
+    model_output_path = resolve_path(config["data"]["pipeline_path"])
 
-    X = pd.read_csv(resolve_path(paths["X"]))
-    y = pd.read_csv(resolve_path(paths["y"])).squeeze()
+    X_df = pd.read_csv(X_transformed)
+    y_df = pd.read_csv(y)
 
-    X_train, _, y_train, _ = train_test_split(
-        X, y, test_size=0.2, stratify=y, random_state=42
-    )
+    preprocessor = joblib.load(model_output_path)
+
+    # Split the data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X_df, y_df, test_size=0.2, random_state=42)
 
     mlflow.set_tracking_uri(config["mlflow"]["tracking_uri"])
     mlflow.set_experiment(config["mlflow"]["experiment_name"])
 
     with mlflow.start_run():
-        model = RandomForestClassifier(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            class_weight="balanced",
-            random_state=42
-        )
-        model.fit(X_train, y_train)
+        # Build the full pipeline, which includes preprocessing and the classifier
+        pipeline = Pipeline([
+            ("preprocessor", preprocessor),  # Preprocessing step (includes added features)
+            ("classifier", LogisticRegression(max_iter=1000))  # Estimator (Logistic Regression)
+        ])
 
-        model_path = resolve_path(paths["model"])
-        joblib.dump(model, model_path)
+        pipeline.fit(X_train, y_train)
 
-        mlflow.log_param("n_estimators", n_estimators)
+        model_output_path = resolve_path(config["data"]["pipeline_path"])
+        joblib.dump(pipeline, model_output_path)
+
+        mlflow.log_param("n_estimators", 100)
         mlflow.log_param("max_depth", max_depth)
-        mlflow.log_artifact(model_path)
-        mlflow.sklearn.log_model(model, artifact_path="model")
+        mlflow.log_artifact(model_output_path)
+        mlflow.sklearn.log_model(pipeline, artifact_path=model_output_path)
 
         print("✅ Model trained and logged to MLflow.")
+
+if __name__ == "__main__":
+    train()

@@ -1,9 +1,20 @@
-mlflow:
-  tracking_uri: http://localhost:5000
-  experiment_name: churn-prediction
-
-paths:
-  X: data/X.csv
+data:
+  raw_path: data/WA_Fn-UseC_-Telco-Customer-Churn.csv
+  clean_path: data/clean_input.csv
+  X: data/X_transformed.csv
   y: data/y.csv
-  model: data/model.pkl
-  confusion_matrix: data/conf_matrix.png
+  X_train_path: data/X_train.csv
+  X_test_path: data/X_test.csv
+  y_train_path: data/y_train.csv
+  y_test_path: data/y_test.csv
+  pipeline_path: data/model_pipeline.pkl
+  model_path: data/saved_model.pkl
+
+mlflow:
+  tracking_uri: http://127.0.0.1:5000
+  experiment_name: churn_prediction
+
+evaluation:
+  output_path: data/conf_matrix.png
+
+target_column: Churn

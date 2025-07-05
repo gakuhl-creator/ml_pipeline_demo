@@ -25,24 +25,24 @@ A production-grade machine learning pipeline for customer churn prediction using
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/gusto-ml-churn-pipeline.git
+git clone https://github.com/gakuhl-creator/gusto-ml-churn-pipeline.git
 cd gusto-ml-churn-pipeline
 ```
 
-### 2. Create Virtual Environment
+### 2. Create Virtual Environments
+
+Python 3.11 is required
+
+Here are the commands to generate the virtual environment:
 
 ```bash
-python3 -m venv venv
+python3.11 -m venv venv
 source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-### 4. Launch Airflow and MLflow
+
+### 3. Launch all the things
 
 ```bash
 chmod +x start.sh
@@ -52,6 +52,19 @@ chmod +x start.sh
 > This starts:
 > - Airflow scheduler at `http://localhost:8080`
 > - MLflow UI at `http://localhost:5000`
+> - FastAPI with Swagger UI viewable at `http://localhost:8000/docs`
+
+
+You will need to execute the following (paste in correct values):
+```bash
+airflow users create \
+  --username admin \
+  --firstname First \
+  --lastname Last \
+  --role Admin \
+  --email admin@example.com \
+  --password admin
+```
 
 ---
 
@@ -111,15 +124,22 @@ Track at: [http://localhost:5000](http://localhost:5000)
 ## 🧬 Configuration (`config.yaml`)
 
 ```yaml
-mlflow:
-  tracking_uri: http://localhost:5000
-  experiment_name: churn-prediction
+data:
+  raw_path: data/clean_input.csv
+  model_output_path: data/model_pipeline.pkl
 
-paths:
-  X: data/X.csv
-  y: data/y.csv
-  model: data/model.pkl
-  confusion_matrix: data/conf_matrix.png
+model:
+  pipeline_path: data/model_pipeline.pkl
+
+mlflow:
+  tracking_uri: http://127.0.0.1:5000
+  experiment_name: churn_prediction
+
+evaluation:
+  output_path: data/conf_matrix.png
+
+target_column: Churn
+
 ```
 
 Update paths and experiment names here for easy portability.
@@ -134,13 +154,63 @@ From the UI at `http://localhost:8080`:
 2. Trigger DAG manually
 3. Monitor task logs and results
 
-Or use CLI:
+Or use CLI (using ```venv```):
 
 ```bash
 airflow dags trigger churn_pipeline
 ```
 
 ---
+
+## Train the model manually from CLI
+
+Make sure you are using `venv`
+
+```python3
+python3 -c "from src.models.train_model import train; train()"
+```
+
+---
+
+## Run the API Server
+
+You can visit the Swagger UI at ```http://localhost:8000/docs```
+
+
+Send a JSON payload such as the following toward  ```/predict```
+
+```JSON
+{
+  "gender": "Female",
+  "SeniorCitizen": 0,
+  "Partner": "Yes",
+  "Dependents": "No",
+  "tenure": 12,
+  "PhoneService": "Yes",
+  "MultipleLines": "No",
+  "InternetService": "Fiber optic",
+  "OnlineSecurity": "No",
+  "OnlineBackup": "Yes",
+  "DeviceProtection": "No",
+  "TechSupport": "No",
+  "StreamingTV": "Yes",
+  "StreamingMovies": "No",
+  "Contract": "Month-to-month",
+  "PaperlessBilling": "Yes",
+  "PaymentMethod": "Electronic check",
+  "MonthlyCharges": 75.35,
+  "TotalCharges": 850.5
+}
+```
+
+... and you will receive a response such the following:
+
+```JSON
+{
+  "churn_prediction": "Yes"
+}
+```
+
 
 ## ✅ Next Steps
 
