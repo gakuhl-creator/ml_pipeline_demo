@@ -73,7 +73,6 @@ airflow users create \
 | Task          | Description                                   |
 |---------------|-----------------------------------------------|
 | `load_data.py`   | Load and persist raw input data as CSV       |
-| `preprocess.py`  | Clean and encode features                    |
 | `train_model.py` | Train RandomForest model + log to MLflow     |
 | `evaluate.py`    | Evaluate test data + log metrics + plot      |
 
@@ -85,22 +84,31 @@ Each task is independently runnable and integrated into an Airflow DAG (`churn_p
 
 ```
 ml_pipeline_demo/
-├── airflow/                  # DAGs and Airflow config
-│   └── churn_dag.py
+├── airflow/
+│   ├── dags/
+│   │   └── churn_dag.py
+├── api/                      # FastAPi
+│   ├── serve_model.py
 ├── data/                     # Input/output data
 │   ├── X.csv
 │   ├── y.csv
-│   ├── model.pkl
+│   ├── model_pipeline.pkl
 │   └── conf_matrix.png
+│   └── clean_input.csv
+│   └── X_test.csv
+│   └── X_transformed.csv
+│   └── y_test.csv
+│   └── y.csv
+│   └── WA_Fn-UseC_-Telco-Customer-Churn.csv
 ├── src/
 │   ├── config.yaml           # Central config for paths + MLflow
-│   ├── utils.py              # Config + path helpers
 │   ├── data_ingest/
 │   │   └── load_data.py
 │   ├── features/
 │   │   └── preprocess.py
 │   └── models/
 │       ├── train_model.py
+│       └── predict_model.py
 │       └── evaluate.py
 ├── requirements.txt
 ├── start.sh
@@ -113,7 +121,7 @@ ml_pipeline_demo/
 
 MLflow logs:
 
-- Parameters: `n_estimators`, `max_depth`, etc.
+- Parameters: `max_iter`
 - Metrics: `accuracy`, `precision`, `recall`, `f1`
 - Artifacts: model pickle, confusion matrix image
 
@@ -125,10 +133,14 @@ Track at: [http://localhost:5000](http://localhost:5000)
 
 ```yaml
 data:
-  raw_path: data/clean_input.csv
-  model_output_path: data/model_pipeline.pkl
-
-model:
+  raw_path: data/WA_Fn-UseC_-Telco-Customer-Churn.csv
+  clean_path: data/clean_input.csv
+  X: data/X_transformed.csv
+  y: data/y.csv
+  X_train_path: data/X_train.csv
+  X_test_path: data/X_test.csv
+  y_train_path: data/y_train.csv
+  y_test_path: data/y_test.csv
   pipeline_path: data/model_pipeline.pkl
 
 mlflow:
@@ -139,10 +151,6 @@ evaluation:
   output_path: data/conf_matrix.png
 
 target_column: Churn
-
-```
-
-Update paths and experiment names here for easy portability.
 
 ---
 
@@ -207,7 +215,9 @@ Send a JSON payload such as the following toward  ```/predict```
 
 ```JSON
 {
-  "churn_prediction": "Yes"
+  "prediction": 1,
+  "prediction_english": "Churn",
+  "churn_probability": 0.6690679352888962
 }
 ```
 
@@ -215,8 +225,8 @@ Send a JSON payload such as the following toward  ```/predict```
 ## ✅ Next Steps
 
 - Track data versions and schema drift
-- Deploy Model as API using Flask or FastAPI
-- Containerize with Docker
+- Include Infrasture as Code (IaC) tool
+- Address scalability concerns
 
 ---
 

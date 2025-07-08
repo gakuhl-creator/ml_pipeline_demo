@@ -72,15 +72,8 @@ def train():
     joblib.dump(pipeline, model_output_path)
 
     # Save the train_test_splitstest files for evaluation
-    joblib.dump(X_test, X_test_path)
-    joblib.dump(y_test, y_test_path)
     X_test.to_csv(X_test_path, index=False)
-    y_test.to_csv(y_test_path, index=False)    
-
-    # Log the trained model to MLflow (optional)
-    mlflow.set_tracking_uri(resolve_path(config["mlflow"]["tracking_uri"]))
-    mlflow.set_experiment(resolve_path(config["mlflow"]["experiment_name"]))
-    mlflow.sklearn.log_model(pipeline, artifact_path="model")
+    y_test.to_csv(y_test_path, index=False)
 
     print(f"Model trained and saved to {model_output_path}")
 
