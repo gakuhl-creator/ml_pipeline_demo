@@ -8,7 +8,6 @@ data:
   y_train_path: data/y_train.csv
   y_test_path: data/y_test.csv
   pipeline_path: data/model_pipeline.pkl
-  model_path: data/saved_model.pkl
 
 mlflow:
   tracking_uri: http://127.0.0.1:5000

@@ -12,6 +12,10 @@ mlruns/
 airflow_home/
 airflow_logs/
 logs/
+mlartifacts/
+
+# Ignore FastAPI artifacts
+http:/
 
 # Virtual environments
 venv/

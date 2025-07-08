@@ -12,7 +12,6 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 from src.data_ingest.load_data import load_data
-from src.features.preprocess import preprocess
 from src.models.train_model import train
 from src.models.evaluate import evaluate
 
@@ -31,8 +30,7 @@ with DAG(dag_id='churn_pipeline',
          catchup=False) as dag:
 
     t1 = PythonOperator(task_id='load_data', python_callable=load_data)
-    t2 = PythonOperator(task_id='preprocess', python_callable=preprocess, do_xcom_push=False)
-    t3 = PythonOperator(task_id="train", python_callable=train)
-    t4 = PythonOperator(task_id='evaluate', python_callable=evaluate)
+    t2 = PythonOperator(task_id="train", python_callable=train)
+    t3 = PythonOperator(task_id='evaluate', python_callable=evaluate)
 
-    t1 >> t2 >> t3 >> t4
+    t1 >> t2 >> t3

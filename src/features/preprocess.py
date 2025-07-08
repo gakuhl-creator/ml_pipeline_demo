@@ -1,9 +1,9 @@
-import yaml
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 import os
-import pandas as pd
 import joblib
-import re
-from src.features.preprocessing import get_preprocessor
 
 def resolve_path(relative_path):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", relative_path))
@@ -14,39 +14,50 @@ def load_config():
         config = yaml.safe_load(f)
     return config
 
-def preprocess():
-    # Load the configuration
-    config = load_config()
-    cleaned_data = resolve_path(config["data"]["clean_path"])
-    output_dir = os.path.dirname(cleaned_data)
-    model_output_path = resolve_path(config["data"]["pipeline_path"])
-    target_column = config["target_column"]
 
-    # Load raw data
-    df = pd.read_csv(cleaned_data)
+# Define numeric and categorical features
+numeric_features = ["tenure", "MonthlyCharges", "TotalCharges"]
+categorical_features = [
+    "gender", "SeniorCitizen", "Partner", "Dependents", "PhoneService",
+    "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+    "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+    "Contract", "PaperlessBilling", "PaymentMethod"
+]
 
-    # Get the preprocessor (this just defines the steps, but doesn't apply them yet)
-    preprocessor = get_preprocessor()
+# Main preprocessing function to define and return the pipeline
+def get_preprocessor():
+    # Numeric feature transformer (Impute and Scale)
+    numeric_transformer = Pipeline(steps=[
+        ("imputer", SimpleImputer(strategy="mean")),
+        ("scaler", StandardScaler())
+    ])
 
-    # Apply the transformations (this is where categorical_transformer is actually executed)
-    X_transformed = preprocessor.fit_transform(df)
+    # Categorical feature transformer (Impute and Encode)
+    categorical_transformer = Pipeline(steps=[
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False, drop='if_binary'))
+    ])
 
-    # # Split into X (features) and y (target)
-    y = X_transformed[target_column].map({'Yes': 1, 'No': 0})
-    X = X_transformed.drop(columns=[target_column])
+    # Combine transformations into a full preprocessing pipeline
+    preprocessor = ColumnTransformer(transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features)
+    ], remainder='passthrough', verbose_feature_names_out=False)
 
-    # print("Shape of X:", X.shape)
-    # print("Shape of y:", y.shape)
+    # Ensuring the output is a pandas DataFrame
+    preprocessor.set_output(transform="pandas")
 
-    # Save transformed data and target variable
-    X.to_csv(os.path.join(output_dir, "X_transformed.csv"), index=False)
-    y.to_csv(os.path.join(output_dir, "y.csv"), index=False)
+    return preprocessor
 
-    # Save the preprocessing pipeline
+# If you want to save the preprocessor (e.g., to disk), you can call this function
+def save_preprocessor(preprocessor, model_output_path):
+    # Save the preprocessor to the specified path using joblib
     joblib.dump(preprocessor, model_output_path)
-
-    print(f"Preprocessing complete. Transformed data saved to {output_dir}")
     print(f"Preprocessing pipeline saved to {model_output_path}")
 
 if __name__ == "__main__":
-    preprocess()
+    # If you want to save the preprocessor when running this script (for development purposes)
+    config = load_config()
+    model_output_path = resolve_path(config["data"]["pipeline_path"])
+    preprocessor = get_preprocessor()
+    save_preprocessor(preprocessor, model_output_path)
