@@ -6,7 +6,7 @@ A production-grade machine learning pipeline for customer churn prediction using
 - **MLflow** for experiment tracking
 - **Scikit-learn** for modeling
 - **Jupyter Notebooks** for analysis
-- **WSL + Python virtualenv** for environment isolation
+- **Python virtualenv** for environment isolation
 
 ---
 
@@ -17,6 +17,7 @@ A production-grade machine learning pipeline for customer churn prediction using
 - Modular and maintainable Python package layout
 - Configurable through a centralized `config.yaml`
 - Ready for local or cloud deployment
+- Data from Kaggle found Here: [wa-fnusec-telcocustomerchurn](https://www.kaggle.com/datasets/palashfendarkar/wa-fnusec-telcocustomerchurn)
 
 ---
 
@@ -70,11 +71,12 @@ airflow users create \
 
 ## 🧠 Pipeline Tasks
 
-| Task          | Description                                   |
-|---------------|-----------------------------------------------|
-| `load_data.py`   | Load and persist raw input data as CSV       |
-| `train_model.py` | Train RandomForest model + log to MLflow     |
-| `evaluate.py`    | Evaluate test data + log metrics + plot      |
+| Task             | Description                                      |
+|------------------|--------------------------------------------------|
+| `load_data.py`   | Load and persist raw input data as CSV           |
+| `preprocess.py`  | Preprocessing pipeline with column Transformers  |
+| `train_model.py` | Train RandomForest model + log to MLflow         |
+| `evaluate.py`    | Evaluate test data + log metrics + plot          |
 
 Each task is independently runnable and integrated into an Airflow DAG (`churn_pipeline`).
 
