@@ -26,8 +26,8 @@ A production-grade machine learning pipeline for customer churn prediction using
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/gakuhl-creator/gusto-ml-churn-pipeline.git
-cd gusto-ml-churn-pipeline
+git clone https://github.com/gakuhl-creator/ml_pipeline_demo.git
+cd ml_pipeline_demo
 ```
 
 ### 2. Create Virtual Environments
@@ -46,7 +46,6 @@ pip install -r requirements.txt
 ### 3. Launch all the things
 
 ```bash
-chmod +x start.sh
 ./start.sh
 ```
 
